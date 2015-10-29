@@ -1,0 +1,65 @@
+data("chickwts")
+with(chickwts,tapply(weight,feed,mean))
+with(chickwts,tapply(weight,feed,sd))
+summary(lm(weight~(feed),data=chickwts))
+with(chickwts,pairwise.t.test(weight,feed,p.adj="bonferroni"))
+TukeyHSD(aov(lm(weight ~ feed, data=chickwts)), conf.level = 0.95)
+levels(chickwts$feed)
+require(gmodels)
+require(multcomp)
+L3=rbind(c(1,0,-1,0,0,0),c(0,0,1,-1,0,0),c(0,0,0,1,-1,0),c(0,0,0,0,1,-1))
+fit0=lm(weight~feed-1,data=chickwts);glh.test(fit0,L3) #Scheffe is F*(a-1)
+Scheffecritical=(6-1)*qf(0.95,4,65);Scheffecritical
+#e average weight for linseed,meatmeal and soybean 
+#is different from the average weight for casien and sunflower
+L1=c(-1/2,0,1/3,1/3,1/3 ,-1/2);glh.test(fit0,L1)
+summary(glh.test(fit0,L1),test=adjusted("bonferroni"))
+bonferroni= 0.05/3;
+bonferroni=3*7.51e-07;bonferroni
+#f avg weight for chicks fed linseed,meatmeal and soybean
+# is 80 units less than the avg weight for chicks fed
+#casein and sunflower & avg wgt for linseed,meatmeal 
+# and soybean is 80 units more than the avg wgt for horsebean
+L2=rbind(c(1/2,0,-1/3,-1/3,-1/3,1/2),c(0,1,-1/3,-1/3,-1/3,0))
+glh.test(fit0,L2,c(80,-80))
+#g CI for the difference between expected weight for chicks fed horsebean
+# vs avg of other expected values Probably Dunetts
+L2=matrix(c(1/5,-1,1/5,1/5,1/5,1/5),nrow=1,byrow=T)
+confint(glht(fit0,L2))
+#2
+second=read.table("http://utstat.toronto.edu/burkett/sta442f15/lightspeed.txt",header = TRUE)
+with(second,tapply(Velocity,Trial,mean))
+with(second,tapply(Velocity,Trial,sd)) #with(second,boxplot(Velocity~Trial))
+anova(lm(Velocity~Trial,data=second));summary(lm(Velocity~Trial,data=second))
+#d) 
+TukeyHSD(aov(lm(Velocity~Trial,data=second)),conf.level = 0.95)
+w=bartlett.test(Velocity~Trial,data=second);w
+kruskal.test(Velocity~Trial,data=second)
+set.seed(2015)
+N=10000
+kcrit=qchisq(0.95,df=4)
+Ki=numeric(N)
+for (i in 1:N){
+  k=c(rnorm(20),rnorm(20),rnorm(20),rnorm(20),rnorm(20))
+  Ki[i]=bartlett.test(k~second$Trial)$statistic[1]
+}
+mean(Ki >= kcrit)
+Ki=numeric(N)
+for (i in 1:N){
+  q=c(rnorm(20,0,1),rnorm(20,0,1),rnorm(20,0,2),rnorm(20,0,2),rnorm(20,0,2))
+  Ki[i]=bartlett.test(q~second$Trial)$statistic[1]
+}
+mean(Ki >= kcrit)
+ki1=numeric(N);ki2=numeric(N);ki3=numeric(N);ki4=numeric(N)
+for (i in 1:N){
+  u1=c(rt(20,200),rt(20,200),rt(20,200),rt(20,200),rt(20,200))
+  u2=c(rt(20,30),rt(20,30),rt(20,30),rt(20,30),rt(20,30))
+  u3=c(rt(20,10),rt(20,10),rt(20,10),rt(20,10),rt(20,10))
+  u4=c(rt(20,5),rt(20,5),rt(20,5),rt(20,5),rt(20,5))
+  ki1[i]=bartlett.test(u1~second$Trial)$statistic[1]
+  ki2[i]=bartlett.test(u2~second$Trial)$statistic[1]
+  ki3[i]=bartlett.test(u3~second$Trial)$statistic[1]
+  ki4[i]=bartlett.test(u4~second$Trial)$statistic[1]
+}
+mean(ki1 >= kcrit);mean(ki2 >= kcrit);mean(ki3 >= kcrit);mean(ki4 >= kcrit)
+
