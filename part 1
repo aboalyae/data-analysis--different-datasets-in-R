@@ -1,0 +1,65 @@
+data("chickwts")
+#a) 
+with(chickwts,tapply(weight,feed,mean))
+with(chickwts,tapply(weight,feed,sd))
+#b) with(chickwts,boxplot(weight~feed))
+#c)
+fullmod=anova(lm(weight~feed,data=chickwts))
+fullmod
+#d) res=resid(lm(weight~feed,data=chickwts)); plot(res)
+#e) par(mfrow=c(2,3));with(chickwts,tapply(weight,feed,qqnorm))
+#f)
+par(mar = rep(2, 4))
+par(mfrow=c(3,3))
+reps=9
+replicate(reps,qqnorm(rnorm(10)))
+#h)
+set.seed(2015)
+shapiro.test(rbinom(20,13,0.4))
+shapiro.test(rpois(20,4))
+shapiro.test(rexp(20,5))
+shapiro.test(rlnorm(20,0,0.3))
+shapiro.test(rgamma(5000,100,1/200))
+qqnorm(rgamma(5000,100,1/200))
+require(nortest)
+ad.test(rt(300000,200))
+#i) 
+y=subset(chickwts,feed %in% c("linseed","meatmeal","soybean"))
+secondmod=anova(lm(weight~feed,data=y))
+secondmod
+#j) 
+Fobs=secondmod$F[1]
+N=10000
+Fi=numeric(N)
+for (i in 1:N){
+  y1=sample(y$weight,length(y$weight))
+  Fi[i]=anova(lm(y1~y$feed))$F[1]
+}
+mean(Fi >= Fobs)
+#k)
+mu1=218.7500; mu2=276.9091; mu3=246.4286
+std1=52.23570; std2=64.90062; std3=54.12907
+n1=10; n2=12; n3=16
+set.seed(2015)
+N=10000
+Fi=numeric(N)
+w=c(rnorm(n1,mu1,std1),rnorm(n2,mu2,std2),rnorm(n3,mu3,std3))
+x=factor(c(rep("linseed",n1),rep("meatmeal",n2),rep("soybean",n3)))
+r=anova(lm(w~x))
+r
+a=3
+Fcrit=qf(0.95,a-1,(n1+n2+n3-a))
+set.seed(2015)
+for (i in 1:N){
+  b=c(rnorm(n1,mu1,std1),rnorm(n2,mu2,std2),rnorm(n3,mu3,std3))
+  Fi[i]=anova(lm(b~x))$F[1]
+}
+mean(Fi >= Fcrit)
+x=factor(c(rep("linseed",n1*2),rep("meatmeal",n2*2),rep("soybean",n3*2)))
+Fcrit=qf(0.95,a-1,(n1*2+n2*2+n3*2-a))
+set.seed(2015)
+for (i in 1:N){
+  b=c(rnorm(n1*2,mu1,std1),rnorm(n2*2,mu2,std2),rnorm(n3*2,mu3,std3))
+  Fi[i]=anova(lm(b~x))$F[1]
+}
+mean(Fi >= Fcrit)
